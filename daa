@@ -1,1 +1,282 @@
-practice 
+5)write a program for analysis of quick sort by using deterministic and randomized variant
+package knapsack;
+import java.util.Arrays;
+import java.util.Random;
+
+class Quicksort {
+
+    public static void deterministicQuickSort(int[] arr, int low, int high) {
+        if (low < high) {
+            int pi = deterministicPartition(arr, low, high);
+            deterministicQuickSort(arr, low, pi - 1);
+            deterministicQuickSort(arr, pi + 1, high);
+        }
+    }
+
+    private static int deterministicPartition(int[] arr, int low, int high) {
+        int pivot = arr[high];  // Choose the last element as pivot
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+                swap(arr, i, j);
+            }
+        }
+        swap(arr, i + 1, high);
+        return i + 1;
+    }
+
+    public static void randomizedQuickSort(int[] arr, int low, int high) {
+        if (low < high) {
+            int pi = randomizedPartition(arr, low, high);
+            randomizedQuickSort(arr, low, pi - 1);
+            randomizedQuickSort(arr, pi + 1, high);
+        }
+    }
+
+    private static int randomizedPartition(int[] arr, int low, int high) {
+        Random rand = new Random();
+        int randomPivot = low + rand.nextInt(high - low + 1);
+        swap(arr, randomPivot, high);  // Swap the random pivot with the last element
+        return deterministicPartition(arr, low, high);
+    }
+
+    private static void swap(int[] arr, int i, int j) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+
+    public static void printArray(int[] arr) {
+        System.out.println(Arrays.toString(arr));
+    }
+
+    public static void main(String[] args) {
+        int[] deterministicArray = {10, 7, 8, 9, 1, 5};
+        int[] randomizedArray = deterministicArray.clone();  
+
+        System.out.println("Original array:");
+        printArray(deterministicArray);
+
+        long startDet = System.nanoTime();
+        deterministicQuickSort(deterministicArray, 0, deterministicArray.length - 1);
+        long endDet = System.nanoTime();
+        System.out.println("\nSorted array using Deterministic Quick Sort:");
+        printArray(deterministicArray);
+        System.out.println("Time taken by Deterministic Quick Sort: " + (endDet - startDet) + " nanoseconds");
+
+        long startRand = System.nanoTime();
+        randomizedQuickSort(randomizedArray, 0, randomizedArray.length - 1);
+        long endRand = System.nanoTime();
+        System.out.println("\nSorted array using Randomized Quick Sort:");
+        printArray(randomizedArray);
+        System.out.println("Time taken by Randomized Quick Sort: " + (endRand - startRand) + " nanoseconds");
+    }
+}
+2)write a program to implement Huffman encoding using a greedy strategy
+package knapsack;
+
+import java.util.PriorityQueue;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.HashMap;
+
+class HuffmanNode {
+    int frequency;
+    char data;
+    HuffmanNode left, right;
+
+    HuffmanNode(char data, int frequency) {
+        this.data = data;
+        this.frequency = frequency;
+        this.left = this.right = null;
+    }
+}
+
+class NodeComparator implements Comparator<HuffmanNode> {
+    @Override
+    public int compare(HuffmanNode o1, HuffmanNode o2) {
+        return o1.frequency - o2.frequency;
+    }
+}
+
+public class Knapsack {  
+
+    public static void buildHuffmanTree(String text) {
+        // Count frequency of each character
+        Map<Character, Integer> frequencyMap = new HashMap<>();
+        for (char c : text.toCharArray()) {
+            frequencyMap.put(c, frequencyMap.getOrDefault(c, 0) + 1);
+        }
+
+        PriorityQueue<HuffmanNode> priorityQueue = new PriorityQueue<>(new NodeComparator());
+
+        for (Map.Entry<Character, Integer> entry : frequencyMap.entrySet()) {
+            priorityQueue.add(new HuffmanNode(entry.getKey(), entry.getValue()));
+        }
+
+        while (priorityQueue.size() > 1) {
+            HuffmanNode left = priorityQueue.poll();
+            HuffmanNode right = priorityQueue.poll();
+
+            HuffmanNode newNode = new HuffmanNode('-', left.frequency + right.frequency);
+            newNode.left = left;
+            newNode.right = right;
+
+            priorityQueue.add(newNode);
+        }
+
+        HuffmanNode root = priorityQueue.poll();
+
+        System.out.println("Character with their corresponding Huffman Codes:");
+        printHuffmanCodes(root, "");
+    }
+
+    private static void printHuffmanCodes(HuffmanNode root, String code) {
+        if (root == null) {
+            return;
+        }
+
+        if (root.left == null && root.right == null) {
+            System.out.println(root.data + ": " + code);
+            return;
+        }
+
+        printHuffmanCodes(root.left, code + "0");
+        printHuffmanCodes(root.right, code + "1");
+    }
+
+    public static void main(String[] args) {
+        String text = "huffman encoding in java";
+
+        System.out.println("Input String: " + text);
+
+        buildHuffmanTree(text);
+    }
+}
+3) write a program to solve a fractional knapsack problem using greedy method
+import java.util.Arrays;
+import java.util.Comparator;
+
+class Item {
+    double value, weight;
+
+    public Item(double value, double weight) {
+        this.value = value;
+        this.weight = weight;
+    }
+}
+
+class greedy {
+
+    public static double getMaxValue(double capacity, Item[] items) {
+        Arrays.sort(items, new Comparator<Item>() {
+            @Override
+            public int compare(Item o1, Item o2) {
+                double r1 = o1.value / o1.weight;
+                double r2 = o2.value / o2.weight;
+                return Double.compare(r2, r1); 
+            }
+        });
+
+        double totalValue = 0.0;  
+        double currentWeight = 0.0;  
+
+        for (Item item : items) {
+            if (currentWeight + item.weight <= capacity) {
+                currentWeight += item.weight;
+                totalValue += item.value;
+            } else {
+                double remainingCapacity = capacity - currentWeight;
+                totalValue += (item.value / item.weight) * remainingCapacity;
+                break; 
+            }
+        }
+
+        return totalValue;
+    }
+
+    public static void main(String[] args) {
+        Item[] items = {
+            new Item(60, 10),
+            new Item(100, 20),
+            new Item(120, 30)
+        };
+
+        double capacity = 50;
+
+        double maxValue = getMaxValue(capacity, items);
+
+        System.out.printf("Maximum value in the knapsack: %.2f\n", maxValue);
+    }
+}
+4)write a program to solve 0-1 knapsack problem using dynamic programming stratrgy
+age knapsack;
+
+class Knapsack {
+
+    public static int knapsack(int[] weights, int[] values, int capacity) {
+        int n = values.length;
+
+        int[][] dp = new int[n + 1][capacity + 1];
+
+        for (int i = 1; i <= n; i++) {
+            for (int w = 0; w <= capacity; w++) {
+                if (weights[i - 1] <= w) {
+                    dp[i][w] = Math.max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + values[i - 1]);
+                } else {
+                    dp[i][w] = dp[i - 1][w];
+                }
+            }
+        }
+
+        return dp[n][capacity];
+    }
+
+    public static void main(String[] args) {
+        int[] values = {60, 100, 120};
+        int[] weights = {10, 20, 30};
+        int capacity = 50;
+
+        int maxValue = knapsack(weights, values, capacity);
+
+        System.out.println("Maximum value in the knapsack: " + maxValue);
+    }
+}
+1) write a program for recursive and non recursive program to calculate Fibonacci number and analysis there time and space complexity
+package knapsack.java;
+
+public class nonrecursion {
+    public static int fibonacci(int n) {
+        if (n <= 1) {
+            return n;
+        }
+        int a = 0, b = 1, fib = 1;
+        for (int i = 2; i <= n; i++) {
+            fib = a + b;
+            a = b;
+            b = fib;
+        }
+        return fib;
+    }
+
+    public static void main(String[] args) {
+        int n = 10;  
+        System.out.println("Fibonacci number at position " + n + " is: " + fibonacci(n));
+    }}
+package knapsack.java;
+
+public class recursion {
+    public static int fibonacci(int n) {
+        if (n <= 1) {
+            return n;
+        }
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+
+    public static void main(String[] args) {
+        int n = 10; 
+        System.out.println("Fibonacci number at position " + n + " is: " + fibonacci(n));
+    }
+}
